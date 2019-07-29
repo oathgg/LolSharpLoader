@@ -28,14 +28,14 @@ namespace LolSharpLoader
 
         private void DownloadAndDecompress(string version)
         {
-            string compressedFile = DownloadCompressedFile(version);
-            if (File.Exists(compressedFile))
-            {
-                DecompressFile(compressedFile);
-            }
+            string compressedFile = DownloadCompressedFile(version, "leagueoflegends");
+            DecompressFile(compressedFile, ".exe");
+
+            compressedFile = DownloadCompressedFile(version, "stub");
+            DecompressFile(compressedFile, ".dll");
         }
 
-        private string DecompressFile(string compressedFile)
+        private void DecompressFile(string compressedFile, string extension)
         {
             string decompressedFile = "";
             byte[] fileInBytes = File.ReadAllBytes(compressedFile);
@@ -46,7 +46,7 @@ namespace LolSharpLoader
                 using (DeflateStream decompressionStream = new DeflateStream(byteStreamOriginal, CompressionMode.Decompress))
                 {
                     string currentFileName = compressedFile;
-                    decompressedFile = currentFileName.Replace(".compressed", ".exe");
+                    decompressedFile = currentFileName.Replace(".compressed", extension);
                     using (FileStream decompressedFileStream = File.Create(decompressedFile))
                     {
                         decompressionStream.CopyTo(decompressedFileStream);
@@ -55,7 +55,6 @@ namespace LolSharpLoader
                     File.Delete(compressedFile);
                 }
             }
-            return decompressedFile;
         }
 
         private string DownloadReleaseList()
@@ -64,17 +63,18 @@ namespace LolSharpLoader
             string targetFile = $@"{targetPath}\{_settings.ListFileName}";
 
             if (!Directory.Exists(targetPath))
-            {
                 Directory.CreateDirectory(targetPath);
-                try
-                {
-                    WebClient wc = new WebClient();
-                    wc.DownloadFile(new Uri(_settings.BaseUrl + _settings.ListFileName), targetFile);
-                }
-                catch
-                {
-                    throw new FileNotFoundException(_settings.BaseUrl + _settings.ListFileName);
-                }
+
+            try
+            {
+                WebClient wc = new WebClient();
+                wc.DownloadFile(new Uri(_settings.BaseUrl + _settings.ListFileName), targetFile);
+
+                wc.Dispose();
+            }
+            catch
+            {
+                throw new FileNotFoundException(_settings.BaseUrl + _settings.ListFileName);
             }
 
             if (!File.Exists(targetFile))
@@ -83,18 +83,20 @@ namespace LolSharpLoader
             return targetFile;
         }
 
-        private string DownloadCompressedFile(string version)
+        private string DownloadCompressedFile(string version, string fileName)
         {
             string targetPath = $@"{_settings.ClientType.ToString()}\{version}";
 
             if (!Directory.Exists(targetPath))
                 Directory.CreateDirectory(targetPath);
 
-            string compressedFileName = $@"{targetPath}\LeagueofLegends.compressed";
+            string compressedFileName = $@"{targetPath}\{fileName}.compressed";
             try
             {
                 WebClient wc = new WebClient();
                 wc.DownloadFile(new Uri(_settings.BaseUrl + version + _settings.UrlPath), compressedFileName);
+
+                wc.Dispose();
             }
             catch
             {

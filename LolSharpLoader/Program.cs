@@ -15,7 +15,7 @@ namespace LolSharpLoader
             Task.WaitAll(new List<Task>
             {
                 Task.Factory.StartNew(() => new RADS(GenerateWindowsSettings()).DownloadClients()),
-                Task.Factory.StartNew(() => new RADS(GenerateMacSettings()).DownloadClients())
+                //Task.Factory.StartNew(() => new RADS(GenerateMacSettings()).DownloadClients())
             }.ToArray());
 
             sw.Stop();
