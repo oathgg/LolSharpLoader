@@ -40,7 +40,8 @@ namespace LolSharpLoader
                 ClientType = ClientType.Mac,
                 BaseUrl = "http://l3cdn.riotgames.com/releases/Maclive/projects/lol_game_client/releases/",
                 ListFileName = "releaselisting_EUW",
-                UrlPath = "/files/LeagueofLegends.app/Contents/MacOS/LeagueofLegends.compressed"
+                ExePath = "/files/LeagueofLegends.app/Contents/MacOS/LeagueofLegends.compressed",
+                StubPath = "/files/LeagueofLegends.app/Contents/MacOS/stub.compressed"
             };
         }
 
@@ -51,7 +52,8 @@ namespace LolSharpLoader
                 ClientType = ClientType.Windows,
                 BaseUrl = "http://l3cdn.riotgames.com/releases/live/projects/lol_game_client/releases/",
                 ListFileName = "releaselisting_EUW",
-                UrlPath = "/files/League of Legends.exe.compressed"
+                ExePath = "/files/League of Legends.exe.compressed",
+                StubPath = "/files/Stub.dll.compressed"
             };
         }
     }

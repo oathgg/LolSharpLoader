@@ -28,16 +28,33 @@ namespace LolSharpLoader
 
         private void DownloadAndDecompress(string version)
         {
-            string compressedFile = DownloadCompressedFile(version, "leagueoflegends");
-            DecompressFile(compressedFile, ".exe");
+            string targetPath = $@"{_settings.ClientType.ToString()}\{version}";
 
-            compressedFile = DownloadCompressedFile(version, "stub");
-            DecompressFile(compressedFile, ".dll");
+            if (!Directory.Exists(targetPath))
+                Directory.CreateDirectory(targetPath);
+
+            WebClient wc = new WebClient();
+
+            try
+            {
+                string compressedFileName = $@"{targetPath}\LeagueOfLegends.compressed";
+                wc.DownloadFile(new Uri(_settings.BaseUrl + version + _settings.ExePath), compressedFileName);
+                DecompressFile(compressedFileName, ".exe");
+
+                Console.WriteLine($"[V] Downloaded {compressedFileName}");
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[X] Failed to download {version + _settings.ExePath}");
+                Console.ResetColor();
+            }
+
+            wc.Dispose();
         }
 
         private void DecompressFile(string compressedFile, string extension)
         {
-            string decompressedFile = "";
             byte[] fileInBytes = File.ReadAllBytes(compressedFile);
             if (fileInBytes[0] == 0x78 && fileInBytes[1] == 0x9C)
             {
@@ -46,11 +63,10 @@ namespace LolSharpLoader
                 using (DeflateStream decompressionStream = new DeflateStream(byteStreamOriginal, CompressionMode.Decompress))
                 {
                     string currentFileName = compressedFile;
-                    decompressedFile = currentFileName.Replace(".compressed", extension);
+                    string decompressedFile = currentFileName.Replace(".compressed", extension);
                     using (FileStream decompressedFileStream = File.Create(decompressedFile))
                     {
                         decompressionStream.CopyTo(decompressedFileStream);
-                        Console.WriteLine("-> {0}", decompressedFile);
                     }
                     File.Delete(compressedFile);
                 }
@@ -81,31 +97,6 @@ namespace LolSharpLoader
                 throw new FileNotFoundException();
 
             return targetFile;
-        }
-
-        private string DownloadCompressedFile(string version, string fileName)
-        {
-            string targetPath = $@"{_settings.ClientType.ToString()}\{version}";
-
-            if (!Directory.Exists(targetPath))
-                Directory.CreateDirectory(targetPath);
-
-            string compressedFileName = $@"{targetPath}\{fileName}.compressed";
-            try
-            {
-                WebClient wc = new WebClient();
-                wc.DownloadFile(new Uri(_settings.BaseUrl + version + _settings.UrlPath), compressedFileName);
-
-                wc.Dispose();
-            }
-            catch
-            {
-                // Delete the directory if we created it and any files in the directory.
-                if (Directory.Exists(targetPath))
-                    Directory.Delete(targetPath, true);
-            }
-
-            return compressedFileName;
         }
     }
 }
